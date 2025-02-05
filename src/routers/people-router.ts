@@ -5,6 +5,7 @@ import { PeopleViewModel } from "../models/PeopleViewModel";
 import { RequestWithQuerry, GetPeopleWithQuerry, RequestWithParams, RequestWithBody, RequestWithParamsAndBody } from "../models/RequestTypes";
 import { URIParamPeopleName } from "../models/URIParamsPeopleName";
 import { HTTP_CODES } from "../utility";
+import { PeopleRepository } from "../repositories/people-repository";
 
 
 export const PeopleRouter = Router({})
@@ -12,25 +13,8 @@ export const PeopleRouter = Router({})
 PeopleRouter.get('/', (req: RequestWithQuerry<GetPeopleWithQuerry>,
     res: Response<PeopleViewModel[]>) => {
     //requestsCounts++
-    let CorrectInputOld = true
-    let SortedPeople = db.people
-    if (req.query.name) {
-        let SortedSettings = req.query.name.toString()
-        SortedPeople = db.people.filter(p => p.name.indexOf(SortedSettings) > -1)
-    }
-    if (req.query.sex)
-        SortedPeople = db.people.filter(p => p.sex === req.query.sex)
-    if (req.query.isOld) {
-        switch (req.query.isOld) {
-            case "true": SortedPeople = db.people.filter(p => p.isOld === true)
-                break
-            case "false": SortedPeople = db.people.filter(p => p.isOld === false)
-                break
-            default: CorrectInputOld = false
-                break
-        }
-    }
-    if (CorrectInputOld) {
+    let SortedPeople = PeopleRepository.GetPeople(req.query.name, req.query.sex, +req.query.age, req.query.isOld)
+    if (SortedPeople !== false) {
         res.send(SortedPeople).status(HTTP_CODES.OK_200)
     } else {
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
@@ -38,24 +22,16 @@ PeopleRouter.get('/', (req: RequestWithQuerry<GetPeopleWithQuerry>,
 })
 PeopleRouter.delete('/:name', (req: RequestWithParams<URIParamPeopleName>, res) => {
     //requestsCounts++
-    let Founded_people = db.people.find(p => p.name === req.params.name)
-    if (Founded_people) {
-        db.people = db.people.filter(p => p.name !== req.params.name)
+    let Deleted = PeopleRepository.DeletePeople(req.params.name)
+    if (Deleted)
         res.sendStatus(HTTP_CODES.Deleted_204)
-    }
     else
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
 })
 PeopleRouter.post('/', (req: RequestWithBody<PeopleViewModel>, res: Response<PeopleViewModel>) => {
     //requestsCounts++
     if (req.body.name && req.body.age && req.body.sex && (req.body.isOld !== undefined)) {
-        let AddedPerson = {
-            name: req.body.name,
-            sex: req.body.sex,
-            age: req.body.age,
-            isOld: req.body.isOld
-        }
-        db.people.push(AddedPerson)
+        let AddedPerson = PeopleRepository.CreateNewPerson(req.body.name, req.body.sex, req.body.age, req.body.isOld)
         res.status(HTTP_CODES.Created_201).json(AddedPerson)
     } else {
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
@@ -64,21 +40,9 @@ PeopleRouter.post('/', (req: RequestWithBody<PeopleViewModel>, res: Response<Peo
 PeopleRouter.put('/:name', (req: RequestWithParamsAndBody<URIParamPeopleName, PeopleViewModel>,
     res: Response<PeopleViewModel>) => {
     //requestsCounts++
-    let SelectedPerson = db.people.find(p => p.name === req.params.name)
-    if ((!SelectedPerson) || (!req.body.name && !req.body.age && !req.body.sex && (req.body.isOld === undefined))) {
+    let SelectedPerson = PeopleRepository.UpdatePerson(req.params.name, req.body.name, req.body.sex, req.body.age, req.body.isOld)
+    if (SelectedPerson === false) {
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
-        return
-    }
-    if (req.body.name) {
-        SelectedPerson.name = req.body.name
-    } if (req.body.age) {
-        SelectedPerson.age = req.body.age
-    }
-    if (req.body.sex) {
-        SelectedPerson.sex = req.body.sex
-    }
-    if (req.body.isOld !== undefined) {
-        SelectedPerson.isOld = req.body.isOld
-    }
+    } else
     res.send(SelectedPerson).status(HTTP_CODES.OK_200)
 })
