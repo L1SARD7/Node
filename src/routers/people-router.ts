@@ -12,8 +12,8 @@ export const PeopleRouter = Router({})
 PeopleRouter.get('/', (req: RequestWithQuerry<GetPeopleWithQuerry>,
     res: Response<PeopleViewModel[]>) => {
     //requestsCounts++
-    let CorrectInputOld = true
     let SortedPeople = db.people
+    let CorrectInputOld = true
     if (req.query.name) {
         let SortedSettings = req.query.name.toString()
         SortedPeople = db.people.filter(p => p.name.indexOf(SortedSettings) > -1)
