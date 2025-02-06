@@ -4,10 +4,10 @@ export const GamesRepository = {
     GetGames (title: string | null, genre: string | null) {
         let SortedGames = db.games
             if (title) {
-                SortedGames = db.games.filter(g => g.title.indexOf(title) > -1)
+                SortedGames = SortedGames.filter(g => g.title.indexOf(title) > -1)
             }
             if (genre) {
-                SortedGames = db.games.filter(g => g.genre === genre)
+                SortedGames = SortedGames.filter(g => g.genre === genre)
             }
         return SortedGames
     },

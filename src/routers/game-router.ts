@@ -7,19 +7,35 @@ import { UpdateGameInputModel } from "../models/UpdateGameInputModel"
 import { URIParamsIdGame } from "../models/URIParamsIdGame"
 import { HTTP_CODES } from "../utility"
 import { GamesRepository } from "../repositories/games-repository"
+import { bodyGenreValidatorMiddleware, bodyTitleValidatorMiddleware, paramsIdValidatorMiddleware, queryGenreValidatorMiddleware, queryTitleValidatorMiddleware } from "../validator/GamesInputDataValidator"
+import { validationResult } from "express-validator"
+
 
 
 
 export const GamesRouter =  Router({})
 
-GamesRouter.get('/', (req: RequestWithQuerry<GetGameWithQuerry>,
-    res: Response<GameViewModel[]>) => {
+GamesRouter.get('/', 
+    queryTitleValidatorMiddleware,
+    queryGenreValidatorMiddleware,
+    (req: RequestWithQuerry<GetGameWithQuerry>,
+    res: Response) => {
+    const validation = validationResult(req)
+    if (((req.query.title) && (req.query.genre)) && (!validation.isEmpty())) {
+        res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
+    }
     let SortedGames = GamesRepository.GetGames(req.query.title, req.query.genre)
     res.send(SortedGames).status(HTTP_CODES.OK_200)
 })
-GamesRouter.get('/:id', (req: RequestWithParams<URIParamsIdGame>,
-    res: Response<GameViewModel>) => {
-    let FoundGame = GamesRepository.GetGameByID(+req.params.id)
+GamesRouter.get('/:id',
+    paramsIdValidatorMiddleware,
+    (req: RequestWithParams<URIParamsIdGame>,
+    res: Response) => {
+    const validation = validationResult(req)
+    if (!validation.isEmpty()) {
+        res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
+    }
+        let FoundGame = GamesRepository.GetGameByID(+req.params.id)
     if (FoundGame) {
         res.send(FoundGame).status(HTTP_CODES.OK_200)
     }
@@ -27,7 +43,13 @@ GamesRouter.get('/:id', (req: RequestWithParams<URIParamsIdGame>,
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
     }
 })
-GamesRouter.delete('/:id', (req: RequestWithParams<URIParamsIdGame>, res) => {
+GamesRouter.delete('/:id', 
+    paramsIdValidatorMiddleware,
+    (req: RequestWithParams<URIParamsIdGame>, res) => {
+    const validation = validationResult(req)
+    if (!validation.isEmpty()) {
+        res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
+    }
     let isDeleted = GamesRepository.DeleteGame(+req.params.id)
     if (isDeleted) {
         res.sendStatus(HTTP_CODES.Deleted_204)
@@ -36,16 +58,31 @@ GamesRouter.delete('/:id', (req: RequestWithParams<URIParamsIdGame>, res) => {
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
     }
 })
-GamesRouter.post('/', (req: RequestWithBody<CreateGameInputModel>, res: Response<GameViewModel>) => {
-    if ((req.body.title) && (req.body.genre)) {
+GamesRouter.post('/',
+    bodyTitleValidatorMiddleware,
+    bodyGenreValidatorMiddleware,
+    (req: RequestWithBody<CreateGameInputModel>, res: Response) => {
+    const validation = validationResult(req)
+    if (((req.query.title) && (req.query.genre)) && (!validation.isEmpty())) {
+        res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
+    }
+        if ((req.body.title) && (req.body.genre)) {
         let CreatedGame = GamesRepository.CreateNewGame(req.body.title, req.body.genre)
         res.status(HTTP_CODES.Created_201).json(CreatedGame)
     } else {
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
     }
 })
-GamesRouter.put('/:id', (req: RequestWithParamsAndBody<URIParamsIdGame, UpdateGameInputModel>,
-    res: Response<GameViewModel>) => {
+GamesRouter.put('/:id', 
+    paramsIdValidatorMiddleware,
+    bodyTitleValidatorMiddleware,
+    bodyGenreValidatorMiddleware,
+    (req: RequestWithParamsAndBody<URIParamsIdGame, UpdateGameInputModel>,
+    res: Response) => {
+    const validation = validationResult(req)
+    if (((req.query.title) && (req.query.genre)) && (!validation.isEmpty())) {
+        res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
+    }
     let UpdatedGame = GamesRepository.UpdateGame(+req.params.id, req.body.title, req.body.genre)
     if (UpdatedGame) {
         res.send(UpdatedGame).status(HTTP_CODES.OK_200)

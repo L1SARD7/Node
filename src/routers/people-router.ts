@@ -7,7 +7,6 @@ import { URIParamPeopleName } from "../models/URIParamsPeopleName";
 import { HTTP_CODES } from "../utility";
 import { PeopleRepository } from "../repositories/people-repository";
 
-
 export const PeopleRouter = Router({})
 
 PeopleRouter.get('/', (req: RequestWithQuerry<GetPeopleWithQuerry>,
