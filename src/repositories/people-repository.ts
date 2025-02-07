@@ -10,6 +10,8 @@ export const PeopleRepository = {
             }
             if (sex)
                 SortedPeople = SortedPeople.filter(p => p.sex === sex)
+            if (age)
+                SortedPeople = SortedPeople.filter(p => p.age === age)
             if (isOld) {
                 switch (isOld) {
                     case "true": SortedPeople = SortedPeople.filter(p => p.isOld === true)
