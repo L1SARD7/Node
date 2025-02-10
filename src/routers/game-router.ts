@@ -1,4 +1,4 @@
-import { Router, Response } from "express"
+import { Router, Response, NextFunction } from "express"
 import { GetGameWithQuerry, RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuerry } from "../models/RequestTypes"
 import { requestsCounts } from "../app"
 import { CreateGameInputModel } from "../models/CreateGameInputModel"
@@ -9,17 +9,35 @@ import { HTTP_CODES } from "../utility"
 import { GamesRepository } from "../repositories/games-repository"
 import { bodyGenreValidatorMiddleware, bodyTitleValidatorMiddleware, paramsIdValidatorMiddleware, queryGenreValidatorMiddleware, queryTitleValidatorMiddleware } from "../validator/GamesInputDataValidator"
 import { validationResult } from "express-validator"
+import { AuthentificateGameAdmin } from "../repositories/authentificator"
 
 
 
 
 export const GamesRouter =  Router({})
 
+const BasicAuthentificator = (req: any, res: any, next: NextFunction) => {
+    
+    if (!req.headers.authorization) {
+    res.set('WWW-Authenticate', 'Basic');
+    return res.status(401).send('Unauthorized');
+    } else { 
+        let isAuthenticated = AuthentificateGameAdmin(req.headers.authorization)
+        if (isAuthenticated) {
+        next()} 
+        else {
+            res.set('WWW-Authenticate', 'Basic');
+            return res.status(401).send('Wrong login or password');
+        }      
+    }
+}
+
 GamesRouter.get('/', 
     queryTitleValidatorMiddleware,
     queryGenreValidatorMiddleware,
     (req: RequestWithQuerry<GetGameWithQuerry>,
     res: Response) => {
+
     const validation = validationResult(req)
     if (((req.query.title) && (req.query.genre)) && (!validation.isEmpty())) {
         res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
@@ -43,7 +61,8 @@ GamesRouter.get('/:id',
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
     }
 })
-GamesRouter.delete('/:id', 
+GamesRouter.delete('/:id',
+    BasicAuthentificator, 
     paramsIdValidatorMiddleware,
     (req: RequestWithParams<URIParamsIdGame>, res) => {
     const validation = validationResult(req)
