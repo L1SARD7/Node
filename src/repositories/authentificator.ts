@@ -10,4 +10,14 @@ export function AuthentificateGameAdmin (codedInfo: string) {
     if (account && password === account.password)
     return true
     else false
+}
+
+export function AuthentificatePeopleAdmin (codedInfo: string) {
+    let base64 = codedInfo.trim().replace('Basic', '')
+    let encodedData = new Buffer(base64, 'base64')
+    let [ login, password] = encodedData.toString().split(':')
+    let account = db.admins.peopleAdmin.find(g => g.login === login)
+    if (account && password === account.password)
+    return true
+    else false
 }   

@@ -78,6 +78,7 @@ GamesRouter.delete('/:id',
     }
 })
 GamesRouter.post('/',
+    BasicAuthentificator,
     bodyTitleValidatorMiddleware,
     bodyGenreValidatorMiddleware,
     (req: RequestWithBody<CreateGameInputModel>, res: Response) => {
@@ -92,7 +93,8 @@ GamesRouter.post('/',
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
     }
 })
-GamesRouter.put('/:id', 
+GamesRouter.put('/:id',
+    BasicAuthentificator, 
     paramsIdValidatorMiddleware,
     bodyTitleValidatorMiddleware,
     bodyGenreValidatorMiddleware,

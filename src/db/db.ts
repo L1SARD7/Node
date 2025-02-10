@@ -21,6 +21,8 @@ export let db: DB_Type = {
     ],
     admins: {
         gameAdmin: [ {login: 'admin', password: 'qwerty'} ],
-        peopleAdmin: [ {login: 'admin1', password: 'qwerty1234'} ]
+        peopleAdmin: [ {login: 'admin1', password: 'qwerty1234'},
+            {login: 'Artem', password: 'fhnmjv'}
+         ]
     }
 }

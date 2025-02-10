@@ -1,4 +1,8 @@
+
+type AccountInfo = {login: string, password: string}
+
 export type UserViewModule = {
-    gameAdmin: [ { login: string, password: string}],
-    peopleAdmin: [ { login: string, password: string}]
+    gameAdmin: AccountInfo[],
+    peopleAdmin: AccountInfo[]
 }
+

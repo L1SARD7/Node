@@ -1,6 +1,4 @@
-import { Router, Response } from "express";
-import { requestsCounts } from "../app";
-import { db } from "../db/db";
+import { Router, Response, NextFunction } from "express";
 import { PeopleViewModel } from "../models/PeopleViewModel";
 import { RequestWithQuerry, GetPeopleWithQuerry, RequestWithParams, RequestWithBody, RequestWithParamsAndBody } from "../models/RequestTypes";
 import { URIParamPeopleName } from "../models/URIParamsPeopleName";
@@ -8,8 +6,25 @@ import { HTTP_CODES } from "../utility";
 import { PeopleRepository } from "../repositories/people-repository";
 import { bodyAgePeopleValidator, bodyIsOldPeopleValidator, bodyNamePeopleValidator, bodySexPeopleValidator, paramsNamePeopleValidator, querryAgePeopleValidator, querryNamePeopleValidator, querryOldPeopleValidator, querrySexPeopleValidator } from "../validator/PeopleInputDataValidator";
 import { validationResult } from "express-validator";
+import { AuthentificatePeopleAdmin } from "../repositories/authentificator";
 
 export const PeopleRouter = Router({})
+
+const BasicAuthentificator = (req: any, res: any, next: NextFunction) => {
+    
+    if (!req.headers.authorization) {
+    res.set('WWW-Authenticate', 'Basic');
+    return res.status(401).send('Unauthorized');
+    } else { 
+        let isAuthenticated = AuthentificatePeopleAdmin(req.headers.authorization)
+        if (isAuthenticated) {
+        next()} 
+        else {
+            res.set('WWW-Authenticate', 'Basic');
+            return res.status(401).send('Wrong login or password');
+        }      
+    }
+}
 
 PeopleRouter.get('/',
     querryNamePeopleValidator,
@@ -28,7 +43,8 @@ PeopleRouter.get('/',
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
     }
 })
-PeopleRouter.delete('/:name', 
+PeopleRouter.delete('/:name',
+    BasicAuthentificator, 
     paramsNamePeopleValidator,
     (req: RequestWithParams<URIParamPeopleName>, res) => {
     const validation = validationResult(req)
@@ -42,6 +58,7 @@ PeopleRouter.delete('/:name',
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
 })
 PeopleRouter.post('/',
+    BasicAuthentificator,
     bodyNamePeopleValidator,
     bodySexPeopleValidator,
     bodyAgePeopleValidator,
@@ -54,7 +71,8 @@ PeopleRouter.post('/',
         res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
     }
 })
-PeopleRouter.put('/:name', 
+PeopleRouter.put('/:name',
+    BasicAuthentificator, 
     paramsNamePeopleValidator, 
     bodyNamePeopleValidator,
     bodySexPeopleValidator,
