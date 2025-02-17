@@ -1,7 +1,8 @@
 import { db } from "../db/db"
+import { GameViewModel } from "../models/GameViewModel"
 
 export const GamesRepository = {
-    GetGames (title: string | null, genre: string | null) {
+    async GetGames (title: string | null, genre: string | null) {
         let SortedGames = db.games
             if (title) {
                 SortedGames = SortedGames.filter(g => g.title.indexOf(title) > -1)
@@ -12,12 +13,12 @@ export const GamesRepository = {
         return SortedGames
     },
 
-    GetGameByID (id: number) {
+    async GetGameByID (id: number) {
         let FoundGame = db.games.find(g => g.id === id)
         return FoundGame
     },
 
-    DeleteGame (id: number) {
+    async DeleteGame (id: number) {
         let DeletedGame = db.games.find(g => g.id === id)
             if (DeletedGame) {
                 db.games = db.games.filter(g => g.id !== id)
@@ -28,7 +29,7 @@ export const GamesRepository = {
             }
     },
 
-    CreateNewGame (title: string, genre: string) {
+    async CreateNewGame (title: string, genre: string) : Promise<GameViewModel> {
         let CreatedGame = {
             id: +(new Date()),
             title: title,
@@ -38,7 +39,7 @@ export const GamesRepository = {
         return CreatedGame
     },
 
-    UpdateGame (id: number, title: string | null, genre: string | null) {
+    async UpdateGame (id: number, title: string | null, genre: string | null) {
         let UpdatedGame = db.games.find(g => g.id === id)
         if ((!UpdatedGame) || (!title && !genre)) {
                 return null

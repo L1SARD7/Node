@@ -2,7 +2,7 @@ import { db } from "../db/db"
 
 
 export const PeopleRepository = {
-    GetPeople(name: string, sex: string, age: number, isOld: string) {
+    async GetPeople(name: string, sex: string, age: number, isOld: string) {
         let CorrectInputOld = true
         let SortedPeople = db.people
             if (name) {
@@ -29,7 +29,7 @@ export const PeopleRepository = {
         }
     },
 
-    DeletePeople (name: string) {
+    async DeletePeople (name: string) {
         let Founded_people = db.people.find(p => p.name === name)
             if (Founded_people) {
                 db.people = db.people.filter(p => p.name !== name)
@@ -39,7 +39,7 @@ export const PeopleRepository = {
                 return false
     },
 
-    CreateNewPerson (name: string, sex: string, age: number, isOld: boolean) {
+    async CreateNewPerson (name: string, sex: string, age: number, isOld: boolean) {
                 let AddedPerson = {
                     name: name,
                     sex: sex,
@@ -50,7 +50,7 @@ export const PeopleRepository = {
                 return AddedPerson
     },
 
-    UpdatePerson (OldName: string, NewName: string, sex: string, age: number, isOld: boolean) {
+    async UpdatePerson (OldName: string, NewName: string, sex: string, age: number, isOld: boolean) {
     let SelectedPerson = db.people.find(p => p.name === OldName)
         if ((!SelectedPerson) || (!NewName && !age && !sex && (isOld === undefined))) {
             return false

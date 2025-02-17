@@ -1,3 +1,4 @@
+import { MongoClient } from "mongodb"
 import { GameViewModel } from "../models/GameViewModel"
 import { PeopleViewModel } from "../models/PeopleViewModel"
 import { UserViewModule } from "../models/UserViewModule"
@@ -24,5 +25,20 @@ export let db: DB_Type = {
         peopleAdmin: [ {login: 'admin1', password: 'qwerty1234'},
             {login: 'Artem', password: 'fhnmjv'}
          ]
+    }
+}
+
+const MongoURI = process.env.MongoURI || "mongodb://0.0.0.0:27017"
+
+export const client = new MongoClient(MongoURI)
+
+export async function runDB() {
+    try {
+        await client.connect();
+        await client.db('metacritic').command({ping: 1})
+        console.log('Conecting to Mongo DataBase completed')
+    }
+    catch {
+        await client.close()
     }
 }
