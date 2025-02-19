@@ -6,10 +6,10 @@ import { GameViewModel } from "../models/GameViewModel"
 import { UpdateGameInputModel } from "../models/UpdateGameInputModel"
 import { URIParamsIdGame } from "../models/URIParamsIdGame"
 import { HTTP_CODES } from "../utility"
-import { GamesRepository } from "../repositories/games-db-repository"
 import { bodyGenreValidatorMiddleware, bodyTitleValidatorMiddleware, paramsIdValidatorMiddleware, queryGenreValidatorMiddleware, queryTitleValidatorMiddleware } from "../validator/GamesInputDataValidator"
 import { validationResult } from "express-validator"
 import { AuthentificateGameAdmin } from "../repositories/authentificator"
+import { gamesService } from "../business/games-business-layer"
 
 
 
@@ -42,7 +42,7 @@ GamesRouter.get('/',
     if (((req.query.title) && (req.query.genre)) && (!validation.isEmpty())) {
         res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
     }
-    let SortedGames = await GamesRepository.GetGames(req.query.title, req.query.genre)
+    let SortedGames = await gamesService.GetGames(req.query.title, req.query.genre)
     res.send(SortedGames).status(HTTP_CODES.OK_200)
 })
 GamesRouter.get('/:id',
@@ -54,7 +54,7 @@ GamesRouter.get('/:id',
     if (!validation.isEmpty()) {
         res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
     }
-        let FoundGame = await GamesRepository.GetGameByID(+req.params.id)
+        let FoundGame = await gamesService.GetGameByID(+req.params.id)
     if (FoundGame) {
         res.send(FoundGame).status(HTTP_CODES.OK_200)
     }
@@ -70,7 +70,7 @@ GamesRouter.delete('/:id',
     if (!validation.isEmpty()) {
         res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
     }
-    let isDeleted = await GamesRepository.DeleteGame(+req.params.id)
+    let isDeleted = await gamesService.DeleteGame(+req.params.id)
     if (isDeleted) {
         res.sendStatus(HTTP_CODES.Deleted_204)
     }
@@ -88,7 +88,7 @@ GamesRouter.post('/',
         res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
     }
         if ((req.body.title) && (req.body.genre)) {
-        let CreatedGame = await GamesRepository.CreateNewGame(req.body.title, req.body.genre)
+        let CreatedGame = await gamesService.CreateNewGame(req.body.title, req.body.genre)
         res.status(HTTP_CODES.Created_201).json(CreatedGame)
     } else {
         res.sendStatus(HTTP_CODES.BAD_REQUEST_400)
@@ -105,7 +105,7 @@ GamesRouter.put('/:id',
     if (((req.query.title) && (req.query.genre)) && (!validation.isEmpty())) {
         res.status(HTTP_CODES.BAD_REQUEST_400).send({errors: validation.array()})
     }
-    let UpdatedGame = await GamesRepository.UpdateGame(+req.params.id, req.body.title, req.body.genre)
+    let UpdatedGame = await gamesService.UpdateGame(+req.params.id, req.body.title, req.body.genre)
     if (UpdatedGame) {
         res.send(UpdatedGame).status(HTTP_CODES.OK_200)
     } else
